@@ -12,8 +12,8 @@ import { RedisService } from './redis.service';
     {
       provide: REDIS_CLIENT,
       inject: [redisConfig.KEY],
-      useFactory: (redisConfig_: ConfigType<typeof redisConfig>) => 
-        new Redis({ ...redisConfig_ })
+      useFactory: (redisConfig_: ConfigType<typeof redisConfig>) =>
+        new Redis({ ...redisConfig_ }),
     },
     RedisService,
   ],

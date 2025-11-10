@@ -13,15 +13,15 @@ import { databaseConfig } from '../configuretion/config';
     {
       provide: KYSELY_DB,
       inject: [databaseConfig.KEY],
-      useFactory: (databaseConfig_: ConfigType<typeof databaseConfig>) => 
+      useFactory: (databaseConfig_: ConfigType<typeof databaseConfig>) =>
         new Kysely<DatabaseSchema>({
           dialect: new PostgresDialect({
             pool: new Pool({
-              ...databaseConfig_
+              ...databaseConfig_,
             }),
           }),
-        })
-    }
+        }),
+    },
   ],
   exports: [KYSELY_DB],
 })

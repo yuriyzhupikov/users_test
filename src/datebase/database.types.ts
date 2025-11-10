@@ -1,7 +1,11 @@
 import type { ColumnType, Generated } from 'kysely';
 
 type NumericColumn = ColumnType<string, number | string, number | string>;
-type TimestampColumn = ColumnType<Date, Date | string | undefined, Date | string>;
+type TimestampColumn = ColumnType<
+  Date,
+  Date | string | undefined,
+  Date | string
+>;
 
 export interface UsersTable {
   id: Generated<number>;

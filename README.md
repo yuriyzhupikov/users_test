@@ -1,26 +1,22 @@
-## Ledger web server
+## web server
 
-NestJS service for maintaining a user's balance in PostgreSQL using a simple ledger (history of credit/debit operations). The `/users/:id/debit` endpoint records a debit operation and recalculates the running balance directly from the history table after every change.
-
-### Stack
-
-- NestJS 11 + Kysely (PostgreSQL) with explicit repository layer
-- Docker Compose for Postgres 16
-- Redis-backed cache with metrics via Prometheus-compatible endpoint
-- Class-validator for DTO validation
-
-## Getting started
-
+### Быстрый запуск
 ```bash
 cp .env.example .env
-docker compose up -d postgres redis
+npm run start:infra
 npm install
+npm run db:migrate
 npm run start:dev
 ```
+Сервис доступен по `http://localhost:3000`, метрики Prometheus — на `/metrics`.
 
-The API listens on the port configured by `PORT` (defaults to `3000`). Update the `.env` file if you change the Postgres credentials/port inside `docker-compose.yml`.
+### Переменные окружения
+- `PORT` — порт HTTP сервера (по умолчанию 3000)
+- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_POOL_MAX`
+- `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`
+- `CACHE_TTL` — время жизни кеша баланса, секунды
 
-## Database model
+## Модель данных
 
 ```
 users
@@ -38,22 +34,20 @@ payment_history
 ```
 
 - A system user with `id=1` is created automatically on startup (if missing).
-- Balances are recalculated from the `payment_history` table after every debit to ensure consistency.
-- `CREDIT` rows are treated as positive cash flow, `DEBIT` as negative.
-
-All SQL lives inside `UsersRepository` (`src/users/repositories/users.repository.ts`), so the service layer only coordinates validation/caching logic. A lightweight `DatabaseModule` wires Kysely to Postgres and ensures the schema exists on startup.
+- Баланс пересчитывается из таблицы `payment_history` после каждого списания.
+- `CREDIT` — приход средств, `DEBIT` — расход.
 
 ## API
 
 | Method | Path | Description |
 | --- | --- | --- |
-| `GET` | `/users/:id` | Returns the cached balance snapshot for the user. |
-| `POST` | `/users/:id/debit` | Body: `{ "amount": number }`. Records a debit, recalculates the balance from history, and returns the updated snapshot. |
-| `GET` | `/metrics` | Exposes Prometheus metrics (`user_balance_reads_total`, `user_debit_requests_total`, default process metrics). |
+| `GET` | `/users/:id` | Возвращает кешированный снимок баланса пользователя. |
+| `POST` | `/users/:id/debit` | `{ "amount": number }`. Записывает списание, пересчитывает баланс и возвращает новый снимок. |
+| `GET` | `/metrics` | Prometheus-метрики (`user_balance_reads_total`, `user_debit_requests_total` и системные). |
 
-Validation is enabled globally. Requests with invalid IDs or amounts fail with `400`/`404`.
+Валидация включена глобально; некорректные ID/amount → ответы `400/404`.
 
-### Example
+### Пример
 
 ```bash
 curl -X POST http://localhost:3000/users/1/debit \
@@ -61,10 +55,10 @@ curl -X POST http://localhost:3000/users/1/debit \
   -d '{"amount": 100}'
 ```
 
-If the user has at least `$100` available, the service stores a new `payment_history` row, recomputes the running total, updates `users.balance`, invalidates the cache entry, and returns the new balance.
+При наличии `$100` создаётся запись в `payment_history`, баланс пересчитывается и кеш обновляется.
 
-## Notes
+## Примечания
 
-- Docker volume `postgres_data` keeps your database between restarts.
-- Run `docker compose down -v` to reset Postgres.
-- For credits/top-ups, insert `payment_history` rows with `action='CREDIT'`; the service will pick them up on the next debit or manual recalculation.
+- Volume `postgres_data` хранит данные Postgres между рестартами.
+- `docker compose down -v` полностью очищает БД.
+- Пополнение баланса выполняется вставкой записи `action='CREDIT'` в `payment_history`.

@@ -11,7 +11,6 @@ export interface UserRecord {
 export const toUserRecord = (row: Selectable<UsersTable>): UserRecord => ({
   id: row.id,
   balance: Number(row.balance) || 0,
-  createdAt: row.created_at as Date,
-  updatedAt: row.updated_at as Date,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
 });
-

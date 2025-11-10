@@ -11,7 +11,11 @@ export class PrometheusService {
     collectDefaultMetrics({ register: this.registry });
   }
 
-  createCounter<T extends string>(name: string, help: string, labelNames: T[]): MetricCounter<T> {
+  createCounter<T extends string>(
+    name: string,
+    help: string,
+    labelNames: T[],
+  ): MetricCounter<T> {
     return new Counter({
       name,
       help,

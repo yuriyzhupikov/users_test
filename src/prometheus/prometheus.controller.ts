@@ -7,7 +7,9 @@ export class PrometheusController {
   constructor(private readonly prometheusService: PrometheusService) {}
 
   @Get('metrics')
-  async exposeMetrics(@Res({ passthrough: true }) res: Response): Promise<string> {
+  async exposeMetrics(
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<string> {
     res.setHeader('Content-Type', this.prometheusService.getContentType());
     return this.prometheusService.getMetrics();
   }

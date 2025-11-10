@@ -10,7 +10,12 @@ import { UsersMetricsService } from './metrics/users-metrics.service';
 @Module({
   imports: [DatabaseModule, PrometheusModule],
   controllers: [UsersController],
-  providers: [UsersService, UsersRepository, UsersCacheService, UsersMetricsService],
+  providers: [
+    UsersService,
+    UsersRepository,
+    UsersCacheService,
+    UsersMetricsService,
+  ],
   exports: [UsersService],
 })
 export class UsersModule {}

@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { MetricCounter, PrometheusService } from '../../prometheus/prometheus.service';
+import {
+  MetricCounter,
+  PrometheusService,
+} from '../../prometheus/prometheus.service';
 
 type BalanceSourceLabel = 'cache_hit' | 'cache_miss';
-type DebitReasonLabel = 'none' | 'not_found' | 'insufficient_balance' | 'unknown';
+type DebitReasonLabel =
+  | 'none'
+  | 'not_found'
+  | 'insufficient_balance'
+  | 'unknown';
 
 @Injectable()
 export class UsersMetricsService {
@@ -11,14 +18,14 @@ export class UsersMetricsService {
 
   constructor(private readonly prometheusService: PrometheusService) {
     this.balanceReadCounter = this.prometheusService.createCounter(
-      'user_balance_reads_total', 
+      'user_balance_reads_total',
       'Total number of balance reads grouped by cache hit or miss',
-      ['source']
+      ['source'],
     );
     this.debitCounter = this.prometheusService.createCounter(
-      'user_debit_requests_total', 
-      'Total number of debit requests grouped by status', 
-      ['status', 'reason']
+      'user_debit_requests_total',
+      'Total number of debit requests grouped by status',
+      ['status', 'reason'],
     );
   }
 

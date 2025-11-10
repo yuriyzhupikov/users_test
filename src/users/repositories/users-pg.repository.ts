@@ -2,7 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Kysely, Selectable, Transaction, sql } from 'kysely';
 import { DatabaseSchema, UsersTable } from '../../datebase/database.types';
 import { PaymentAction } from '../enum/payment-action.enum';
-import { InsufficientBalanceError, UserNotFoundError } from '../errors/user-domain.errors';
+import {
+  InsufficientBalanceError,
+  UserNotFoundError,
+} from '../errors/user-domain.errors';
 import { KYSELY_DB } from '../../configuretion/constants';
 
 type DbExecutor = Kysely<DatabaseSchema> | Transaction<DatabaseSchema>;
@@ -29,7 +32,10 @@ export class UsersRepository {
     return row;
   }
 
-  async debitUserBalance(userId: number, amount: number): Promise<Selectable<UsersTable>> {
+  async debitUserBalance(
+    userId: number,
+    amount: number,
+  ): Promise<Selectable<UsersTable>> {
     const updatedRow = await this.db.transaction().execute(async (trx) => {
       const user = await trx
         .selectFrom('users')
@@ -75,11 +81,16 @@ export class UsersRepository {
     return updatedRow;
   }
 
-  private async calculateBalance(executor: DbExecutor, userId: number): Promise<number> {
+  private async calculateBalance(
+    executor: DbExecutor,
+    userId: number,
+  ): Promise<number> {
     const result = await executor
       .selectFrom('payment_history')
       .select(
-        sql<number>`COALESCE(SUM(CASE WHEN action = 'CREDIT' THEN amount ELSE -amount END), 0)`.as('balance'),
+        sql<number>`COALESCE(SUM(CASE WHEN action = 'CREDIT' THEN amount ELSE -amount END), 0)`.as(
+          'balance',
+        ),
       )
       .where('user_id', '=', userId)
       .executeTakeFirst();

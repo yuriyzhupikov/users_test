@@ -1,14 +1,21 @@
-import { Injectable, NotFoundException, BadRequestException, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { UsersRepository } from './repositories/users-pg.repository';
 import { toUserBalanceDto, UserBalanceDto } from './dto/user-balance.dto';
-import { InsufficientBalanceError, UserNotFoundError } from './errors/user-domain.errors';
+import {
+  InsufficientBalanceError,
+  UserNotFoundError,
+} from './errors/user-domain.errors';
 import { UsersCacheService } from './cache/users-cache.service';
 import { toUserRecord } from './domain/user-record';
 import { UsersMetricsService } from './metrics/users-metrics.service';
 
 @Injectable()
 export class UsersService implements OnModuleInit {
-
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly usersCache: UsersCacheService,
@@ -54,7 +61,10 @@ export class UsersService implements OnModuleInit {
     }
 
     try {
-      const updatedUserRow = await this.usersRepository.debitUserBalance(userId, amount);
+      const updatedUserRow = await this.usersRepository.debitUserBalance(
+        userId,
+        amount,
+      );
       const updatedUser = toUserRecord(updatedUserRow);
 
       const dto = toUserBalanceDto({
