@@ -11,11 +11,11 @@ export const databaseConfig = registerAs('database-config', () => ({
   user: process.env.DB_USER || 'user',
   password: String(process.env.DB_PASSWORD) || '1234',
   name: process.env.DB_NAME || 'user',
-  maxPool: Number(process.env.DB_POOL_MAX) || 10,
+  max: Number(process.env.DB_POOL_MAX) || 10,
 }));
 
 export const redisConfig = registerAs('redis-config', () => ({
-  host: process.env.REDIS_HOST ?? 'localhost',
+  host: process.env.REDIS_HOST || 'localhost',
   port: Number(process.env.REDIS_PORT) || 6379,
   password: process.env.REDIS_PASSWORD,
   db: Number(process.env.REDIS_DB) || 0,
