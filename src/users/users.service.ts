@@ -39,7 +39,7 @@ export class UsersService implements OnModuleInit {
     const userRow = await this.usersRepository.findById(userId);
 
     if (!userRow) {
-      throw new NotFoundException(`User ${userId} not found`);
+      throw new UserNotFoundError(userId);
     }
 
     const user = toUserRecord(userRow);
