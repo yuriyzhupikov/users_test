@@ -1,9 +1,19 @@
 # Как запустить приложение
 
-1. Установить зависимости: `npm install`
-2. Запуск e2e теста: npm run test:e2e -- --runInBand
-2. Поднять инфраструктуру: `docker compose up -d postgres redis`
-3. Стартовать сервис: `npm run start:dev`
+1. `npm install`
+2. `docker compose up -d postgres redis`
+3. `npm run db:migrate`
+4. `npm run start:dev`
 
-После этого API доступен на `http://localhost:3000`.
+# E2E-тесты
 
+В каталоге лежит сквозной тест пользовательского баланса. Он использует Fastify-адаптер и in-memory замены БД/кэша, поэтому внешний Postgres/Redis не нужны.
+
+## Как запустить тесты
+
+```bash
+npm install
+npm run test:e2e -- --runInBand
+```
+
+Флаг `--runInBand` помогает избежать падений Jest в ограниченных окружениях.

@@ -28,7 +28,7 @@ describe('UsersController', () => {
     const snapshot = { id: 1, balance: 250, updatedAt: new Date() };
     jest.spyOn(service, 'getUserBalance').mockResolvedValue(snapshot);
 
-    await expect(controller.findOne(1)).resolves.toBe(snapshot);
+    await expect(controller.getUserBalance(1)).resolves.toBe(snapshot);
     expect(service.getUserBalance).toHaveBeenCalledWith(1);
   });
 

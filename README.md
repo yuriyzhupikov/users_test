@@ -1,20 +1,13 @@
-## web server
-
 ### Быстрый запуск
+1. Создать базуданных
+2. Выполнить команды:
 ```bash
 cp .env.example .env
+npm ci
 npm run start:infra
-npm install
 npm run db:migrate
 npm run start:dev
 ```
-Сервис доступен по `http://localhost:3000`, метрики Prometheus — на `/metrics`.
-
-### Переменные окружения
-- `PORT` — порт HTTP сервера (по умолчанию 3000)
-- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_POOL_MAX`
-- `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`
-- `CACHE_TTL` — время жизни кеша баланса, секунды
 
 ## Модель данных
 
@@ -32,10 +25,6 @@ payment_history
   amount  numeric(12,2)
   ts      timestamptz
 ```
-
-- A system user with `id=1` is created automatically on startup (if missing).
-- Баланс пересчитывается из таблицы `payment_history` после каждого списания.
-- `CREDIT` — приход средств, `DEBIT` — расход.
 
 ## API
 
@@ -56,9 +45,3 @@ curl -X POST http://localhost:3000/users/1/debit \
 ```
 
 При наличии `$100` создаётся запись в `payment_history`, баланс пересчитывается и кеш обновляется.
-
-## Примечания
-
-- Volume `postgres_data` хранит данные Postgres между рестартами.
-- `docker compose down -v` полностью очищает БД.
-- Пополнение баланса выполняется вставкой записи `action='CREDIT'` в `payment_history`.

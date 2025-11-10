@@ -23,9 +23,7 @@ class InMemoryUsersRepository {
     updated_at: new Date(),
   };
 
-  async ensureDefaultUser(): Promise<void> {
-    // already seeded
-  }
+  async ensureDefaultUser(): Promise<void> {}
 
   async findById(userId: number) {
     if (userId !== this.user.id) {
