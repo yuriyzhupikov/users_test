@@ -6,16 +6,18 @@ import {
   InsufficientBalanceError,
   UserNotFoundError,
 } from '../errors/user-domain.errors';
-import { KYSELY_DB } from '../../configuretion/constants';
+import { PG_CLIENT } from '../../configuretion/constants';
 
 type DbExecutor = Kysely<DatabaseSchema> | Transaction<DatabaseSchema>;
 
 @Injectable()
 export class UsersRepository {
-  constructor(@Inject(KYSELY_DB) private readonly db: Kysely<DatabaseSchema>) {}
+  constructor(
+    @Inject(PG_CLIENT) private readonly pgClient: Kysely<DatabaseSchema>,
+  ) {}
 
   async ensureDefaultUser(): Promise<void> {
-    await this.db
+    await this.pgClient
       .insertInto('users')
       .values({ id: 1, balance: 0 })
       .onConflict((oc) => oc.column('id').doNothing())
@@ -23,7 +25,7 @@ export class UsersRepository {
   }
 
   async findById(userId: number): Promise<Selectable<UsersTable> | undefined> {
-    const row = await this.db
+    const row = await this.pgClient
       .selectFrom('users')
       .selectAll()
       .where('id', '=', userId)
@@ -36,47 +38,49 @@ export class UsersRepository {
     userId: number,
     amount: number,
   ): Promise<Selectable<UsersTable>> {
-    const updatedRow = await this.db.transaction().execute(async (trx) => {
-      const user = await trx
-        .selectFrom('users')
-        .selectAll()
-        .where('id', '=', userId)
-        .forUpdate()
-        .executeTakeFirst();
+    const updatedRow = await this.pgClient
+      .transaction()
+      .execute(async (trx) => {
+        const user = await trx
+          .selectFrom('users')
+          .selectAll()
+          .where('id', '=', userId)
+          .forUpdate()
+          .executeTakeFirst();
 
-      if (!user) {
-        throw new UserNotFoundError(userId);
-      }
+        if (!user) {
+          throw new UserNotFoundError(userId);
+        }
 
-      const currentBalance = Number(user.balance) || 0;
+        const currentBalance = Number(user.balance) || 0;
 
-      if (currentBalance < amount) {
-        throw new InsufficientBalanceError(userId);
-      }
+        if (currentBalance < amount) {
+          throw new InsufficientBalanceError(userId);
+        }
 
-      await trx
-        .insertInto('payment_history')
-        .values({
-          user_id: userId,
-          action: PaymentAction.DEBIT,
-          amount,
-        })
-        .execute();
+        await trx
+          .insertInto('payment_history')
+          .values({
+            user_id: userId,
+            action: PaymentAction.DEBIT,
+            amount,
+          })
+          .execute();
 
-      const newBalance = await this.calculateBalance(trx, userId);
+        const newBalance = await this.calculateBalance(trx, userId);
 
-      const updated = await trx
-        .updateTable('users')
-        .set({
-          balance: newBalance,
-          updated_at: sql`now()`,
-        })
-        .where('id', '=', userId)
-        .returningAll()
-        .executeTakeFirstOrThrow();
+        const updated = await trx
+          .updateTable('users')
+          .set({
+            balance: newBalance,
+            updated_at: sql`now()`,
+          })
+          .where('id', '=', userId)
+          .returningAll()
+          .executeTakeFirstOrThrow();
 
-      return updated;
-    });
+        return updated;
+      });
 
     return updatedRow;
   }

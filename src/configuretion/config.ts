@@ -5,7 +5,7 @@ export const appConfig = registerAs('app-config', () => ({
   cacheTtlSeconds: Number(process.env.CACHE_TTL) || 30,
 }));
 
-export const databaseConfig = registerAs('database-config', () => ({
+export const pgConfig = registerAs('pg-config', () => ({
   host: process.env.DB_HOST || 'localhost',
   port: Number(process.env.DB_PORT) || 5433,
   user: process.env.DB_USER || 'user',
